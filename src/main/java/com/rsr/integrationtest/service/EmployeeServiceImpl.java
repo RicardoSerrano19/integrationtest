@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.rsr.integrationtest.domain.Employee;
+import com.rsr.integrationtest.repository.EmployeeRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -13,10 +14,12 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class EmployeeServiceImpl implements EmployeeService{
 
+    private final EmployeeRepository employeeRepository;
+
     @Override
     public Employee saveEmployee(Employee employee) {
-        // TODO Auto-generated method stub
-        return null;
+        Employee employeeSaved = employeeRepository.save(employee);
+        return employeeSaved;
     }
 
     @Override
