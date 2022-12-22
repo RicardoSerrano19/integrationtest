@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.rsr.integrationtest.domain.Employee;
+import com.rsr.integrationtest.exception.DocumentNotFoundException;
 import com.rsr.integrationtest.repository.EmployeeRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -29,8 +30,9 @@ public class EmployeeServiceImpl implements EmployeeService{
 
     @Override
     public Optional<Employee> getEmployeeById(String id) {
-        // TODO Auto-generated method stub
-        return Optional.empty();
+        Optional<Employee> eOptional = employeeRepository.findById(id);
+        if(eOptional.isPresent()) return eOptional;
+        throw new DocumentNotFoundException("Document with that id do not exist");
     }
 
     @Override
