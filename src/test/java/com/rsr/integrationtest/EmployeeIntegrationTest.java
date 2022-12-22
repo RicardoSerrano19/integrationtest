@@ -1,5 +1,8 @@
 package com.rsr.integrationtest;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,4 +70,25 @@ public class EmployeeIntegrationTest {
 
     }
     
+
+    @Test
+    public void givenListOfEmployees_whenGetAllEmployees_thenReturnEmployeesList() throws Exception{
+        // given
+        List<Employee> listOfEmployees = new ArrayList<>();
+        listOfEmployees.add(Employee.builder().firstName("Javier").lastName("Lopez").email("javierlpz@yahoo.com").build());
+        listOfEmployees.add(Employee.builder().firstName("Sandra").lastName("Robles").email("roblesandra@outlook.com").build());
+
+        employeeRepository.saveAll(listOfEmployees);
+
+        // when
+        ResultActions response = mockMvc.perform(MockMvcRequestBuilders.get(API));
+
+        // then
+        response.andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.size()", Matchers.is(listOfEmployees.size())))
+            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(MockMvcResultMatchers.status().reason(Matchers.nullValue()));            
+
+    }
 }
