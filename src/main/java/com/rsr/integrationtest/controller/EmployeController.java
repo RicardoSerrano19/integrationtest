@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/employees")
 public class EmployeController {
     
-    private final EmployeeServiceImpl employeeService;
+    private final EmployeeService employeeService;
 
     @PostMapping
     public ResponseEntity<Employee> createEmployee(@RequestBody Employee employee){
