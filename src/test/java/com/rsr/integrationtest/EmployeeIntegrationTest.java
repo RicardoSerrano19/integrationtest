@@ -1,5 +1,7 @@
 package com.rsr.integrationtest;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +22,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rsr.integrationtest.domain.Employee;
+import com.rsr.integrationtest.exception.DocumentNotFoundException;
 import com.rsr.integrationtest.repository.EmployeeRepository;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -90,5 +93,55 @@ public class EmployeeIntegrationTest {
             .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(MockMvcResultMatchers.status().reason(Matchers.nullValue()));            
 
+    }
+
+    @Test
+    public void givenStringId_whenFindEmployeeById_thenReturnEmployee() throws Exception{
+        // given 
+        Employee employee = Employee.builder()
+                .firstName("Ramses")
+                .lastName("Molina")
+                .email("ramses_molina@gmail.com")
+                .build();
+        employeeRepository.save(employee);
+
+        // when
+        ResultActions response = mockMvc.perform(MockMvcRequestBuilders.get(API + "/{id}", employee.getId()));
+
+        // then
+        response.andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.id", Matchers.not(Matchers.blankOrNullString())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.firstName", Matchers.is(employee.getFirstName())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.lastName", Matchers.is(employee.getLastName())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.email", Matchers.is(employee.getEmail())))
+            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(MockMvcResultMatchers.status().reason(Matchers.nullValue()));
+    }
+
+    @Test
+    public void givenInvalidStringId_whenFindEmployeeById_thenThrowDocumentNotFoundException() throws Exception{
+        // given 
+        Employee employee = Employee.builder()
+                .firstName("Ramses")
+                .lastName("Molina")
+                .email("ramses_molina@gmail.com")
+                .build();
+        employeeRepository.save(employee);
+
+        // when
+        ResultActions response = mockMvc.perform(MockMvcRequestBuilders.get(API + "/{id}", "invalidId123"));
+
+        // then
+        response.andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().isNotFound())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status", Matchers.is(404)))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.error", Matchers.is("Not Found")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.message", Matchers.is("Document with that id do not exist")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.path", Matchers.notNullValue()))
+            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(result -> assertTrue(result.getResolvedException() instanceof DocumentNotFoundException));
+
+            
     }
 }
