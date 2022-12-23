@@ -177,4 +177,36 @@ public class EmployeeIntegrationTest {
             .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(MockMvcResultMatchers.status().reason(Matchers.nullValue()));
     }
+
+    @Test
+    public void givenInvalidStringId_whenUpdateEmployee_thenThrowDocumentNotFoundException() throws Exception{
+        // given
+        Employee savedEmployee = Employee.builder()
+            .firstName("Fede")
+            .lastName("Juares")
+            .email("fedejuarez31@outlook.com")
+            .build();
+        employeeRepository.save(savedEmployee);
+
+        Employee updatedEmployee = Employee.builder()
+            .firstName("Federica")
+            .lastName("Juarez")
+            .email("fejuarez31@outlook.com")
+            .build();
+
+        // when
+        ResultActions response = mockMvc.perform(MockMvcRequestBuilders.put(API + "/{id}", "invalidId123")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(updatedEmployee)));
+
+        // then
+        response.andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().isNotFound())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status", Matchers.is(404)))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.error", Matchers.is("Not Found")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.message", Matchers.is("Document with that id do not exist")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.path", Matchers.notNullValue()))
+            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(result -> assertTrue(result.getResolvedException() instanceof DocumentNotFoundException));
+    }
 }
