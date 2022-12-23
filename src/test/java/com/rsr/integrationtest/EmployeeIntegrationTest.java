@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -143,5 +144,37 @@ public class EmployeeIntegrationTest {
             .andExpect(result -> assertTrue(result.getResolvedException() instanceof DocumentNotFoundException));
 
             
+    }
+
+    @Test
+    public void givenUpdatedEmployee_whenUpdateEmployee_thenReturnUpdatedEmployee() throws Exception{
+        // given
+        Employee savedEmployee = Employee.builder()
+            .firstName("Fede")
+            .lastName("Juares")
+            .email("fedejuarez31@outlook.com")
+            .build();
+        employeeRepository.save(savedEmployee);
+
+        Employee updatedEmployee = Employee.builder()
+            .firstName("Federica")
+            .lastName("Juarez")
+            .email("fejuarez31@outlook.com")
+            .build();
+
+        // when
+        ResultActions response = mockMvc.perform(MockMvcRequestBuilders.put(API + "/{id}", savedEmployee.getId())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(updatedEmployee)));
+            
+        // then
+        response.andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.id", Matchers.is(savedEmployee.getId())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.firstName", Matchers.is(updatedEmployee.getFirstName())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.lastName", Matchers.is(updatedEmployee.getLastName())))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.email", Matchers.is(updatedEmployee.getEmail())))
+            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(MockMvcResultMatchers.status().reason(Matchers.nullValue()));
     }
 }
