@@ -36,9 +36,16 @@ public class EmployeeServiceImpl implements EmployeeService{
     }
 
     @Override
-    public Employee updateEmployee(Employee updatedEmployee) {
-        // TODO Auto-generated method stub
-        return null;
+    public Employee updateEmployee(String id, Employee updatedEmployee) {
+        Optional<Employee> eOptional = employeeRepository.findById(id);
+        if(eOptional.isEmpty()) throw new DocumentNotFoundException("Document with that id do not exist");
+        if(updatedEmployee.getFirstName() != null) eOptional.get().setFirstName(updatedEmployee.getFirstName());
+        if(updatedEmployee.getLastName() != null) eOptional.get().setLastName(updatedEmployee.getLastName());
+        if(updatedEmployee.getEmail() != null) eOptional.get().setEmail(updatedEmployee.getEmail());
+
+        Employee savedEmployee = employeeRepository.save(eOptional.get());
+        return savedEmployee;
+
     }
 
     @Override
