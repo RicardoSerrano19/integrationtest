@@ -2,7 +2,6 @@ package com.rsr.integrationtest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import com.rsr.integrationtest.exception.ErrorResponse;
