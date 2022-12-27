@@ -49,9 +49,10 @@ public class EmployeeServiceImpl implements EmployeeService{
     }
 
     @Override
-    public void deleteEmployee(String id) {
-        // TODO Auto-generated method stub
-        
+    public String deleteEmployee(String id) {
+        Employee employee = employeeRepository.findById(id).orElseThrow(() -> new DocumentNotFoundException("Document with that id do not exist"));
+        employeeRepository.delete(employee);
+        return String.format("Employee with id: %s successfully deleted", id);
     }
     
 }
