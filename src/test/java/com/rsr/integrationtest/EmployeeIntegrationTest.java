@@ -2,6 +2,7 @@ package com.rsr.integrationtest;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -197,6 +198,53 @@ public class EmployeeIntegrationTest {
         ResultActions response = mockMvc.perform(MockMvcRequestBuilders.put(API + "/{id}", "invalidId123")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(updatedEmployee)));
+
+        // then
+        response.andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().isNotFound())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status", Matchers.is(404)))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.error", Matchers.is("Not Found")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.message", Matchers.is("Document with that id do not exist")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.path", Matchers.notNullValue()))
+            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(result -> assertTrue(result.getResolvedException() instanceof DocumentNotFoundException));
+    }
+
+    @Test
+    public void givenStringId_whenDeleteEmployeeById_thenReturnDeleteMessage() throws Exception{
+
+        // given
+        Employee savedEmployee = Employee.builder()
+            .firstName("Fede")
+            .lastName("Juares")
+            .email("fedejuarez31@outlook.com")
+            .build();
+        employeeRepository.save(savedEmployee);
+
+        // when
+        ResultActions response = mockMvc.perform(MockMvcRequestBuilders.delete(API + "/{id}", savedEmployee.getId()));
+
+        // then
+        response.andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andExpect(MockMvcResultMatchers.content().string("Employee with id: " + savedEmployee.getId()+ " successfully deleted"))
+            .andExpect(MockMvcResultMatchers.content().contentType(new MediaType(MediaType.TEXT_PLAIN, StandardCharsets.UTF_8)));
+
+    }
+
+    @Test
+    public void givenInvalidStringId_whenDeleteEmployeeById_thenThrowDocumentNotFoundException() throws Exception{
+        // given
+        Employee savedEmployee = Employee.builder()
+            .firstName("Fede")
+            .lastName("Juares")
+            .email("fedejuarez31@outlook.com")
+            .build();
+        employeeRepository.save(savedEmployee);
+
+
+        // when
+        ResultActions response = mockMvc.perform(MockMvcRequestBuilders.delete(API + "/{id}", "invalidId123"));
 
         // then
         response.andDo(MockMvcResultHandlers.print())
