@@ -45,6 +45,12 @@ jobs:
         cache: maven
     - name: Test with Maven
       run: mvn test
+      env: 
+        MAVEN_CLI_OPTS: "-Dsurefire.useFile=true -Dsurefire.reportFormat=xml"
+    - name: Publish test
+      uses: actions/upload-test-results@v1
+      with:
+        path: target/surefire-reports/TEST-*.xml
     needs:
       - build
   
